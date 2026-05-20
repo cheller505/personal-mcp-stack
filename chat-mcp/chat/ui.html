@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chat-mcp</title>
+<style>
+:root {
+  --bg: #0f1115;
+  --panel: #161922;
+  --panel-2: #1c2030;
+  --border: #2a2f40;
+  --text: #e6e8ec;
+  --muted: #8b93a7;
+  --accent: #7aa2ff;
+  --accent-2: #5cc6a3;
+  --warn: #e0a047;
+  --err: #e76060;
+  --thinking: #797f95;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  font-size: 15px; line-height: 1.5;
+  height: 100%; overflow: hidden;
+}
+#app { display: flex; flex-direction: column; height: 100vh; max-width: 960px; margin: 0 auto; }
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+  background: var(--panel); flex-wrap: wrap;
+}
+header h1 { font-size: 14px; margin: 0; font-weight: 600; color: var(--muted); }
+header .model { font-size: 13px; color: var(--accent); font-family: ui-monospace, monospace; }
+.pills { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.pill {
+  font-size: 11px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--panel-2); color: var(--muted);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.dot { width: 8px; height: 8px; border-radius: 999px; background: var(--muted); }
+.dot.up { background: var(--accent-2); }
+.dot.down { background: var(--err); }
+button.new {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+}
+button.new:hover { background: var(--border); }
+
+#messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.msg { display: flex; flex-direction: column; gap: 4px; }
+.msg .role {
+  font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.msg.user .role { color: var(--accent); }
+.msg.assistant .role { color: var(--accent-2); }
+.msg .body {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 10px 12px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word;
+}
+.msg.user .body { background: var(--panel-2); }
+
+.thinking-block {
+  margin-top: 4px;
+  border: 1px dashed var(--border); border-radius: 6px;
+  background: rgba(120, 127, 149, 0.06);
+}
+.thinking-block summary {
+  cursor: pointer; padding: 6px 10px; font-size: 12px; color: var(--thinking);
+  user-select: none;
+}
+.thinking-block .thinking-body {
+  padding: 8px 12px; border-top: 1px dashed var(--border);
+  white-space: pre-wrap; font-size: 13px; color: var(--thinking);
+  max-height: 320px; overflow-y: auto;
+}
+
+.tool-call {
+  margin-top: 6px; padding: 6px 10px; font-size: 12px;
+  background: rgba(122, 162, 255, 0.08);
+  border: 1px solid rgba(122, 162, 255, 0.25); border-radius: 6px;
+  color: var(--accent); font-family: ui-monospace, monospace;
+}
+.tool-call .spinner {
+  display: inline-block; width: 10px; height: 10px; margin-right: 6px;
+  border: 2px solid var(--accent); border-top-color: transparent;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+.tool-call.done .spinner { display: none; }
+.tool-call.done { color: var(--accent-2); border-color: rgba(92, 198, 163, 0.3); background: rgba(92, 198, 163, 0.08); }
+.tool-call .arrow { margin-right: 4px; }
+.tool-result { margin-top: 4px; }
+.tool-result summary {
+  cursor: pointer; font-size: 12px; color: var(--muted); padding: 3px 0;
+}
+.tool-result .tool-result-body {
+  margin-top: 4px; padding: 8px 10px; background: var(--panel);
+  border: 1px solid var(--border); border-radius: 6px; font-size: 12px;
+  white-space: pre-wrap; font-family: ui-monospace, monospace;
+  max-height: 300px; overflow-y: auto; color: var(--muted);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error {
+  color: var(--err); background: rgba(231, 96, 96, 0.08);
+  border: 1px solid rgba(231, 96, 96, 0.3); padding: 8px 12px; border-radius: 6px;
+  font-size: 13px;
+}
+
+#input-row {
+  border-top: 1px solid var(--border); padding: 10px 16px;
+  background: var(--panel); display: flex; gap: 8px; align-items: flex-end;
+}
+#input {
+  flex: 1; resize: none; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-family: inherit; font-size: 14px; line-height: 1.4;
+  min-height: 40px; max-height: 200px; outline: none;
+}
+#input:focus { border-color: var(--accent); }
+#send {
+  background: var(--accent); color: #0f1115; border: 0; border-radius: 8px;
+  padding: 10px 18px; font-weight: 600; cursor: pointer; font-size: 14px;
+}
+#send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  header h1 { display: none; }
+  #messages { padding: 12px; }
+  #input-row { padding: 8px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>chat-mcp</h1>
+    <span class="model" id="model">…</span>
+    <div class="pills" id="pills"></div>
+    <button class="new" id="new-chat">New chat</button>
+  </header>
+  <div id="messages"></div>
+  <div id="input-row">
+    <textarea id="input" rows="1" placeholder="Ask anything — uses email, ClickUp, Granola, OneNote, Slack…"></textarea>
+    <button id="send">Send</button>
+  </div>
+</div>
+
+<script>
+const SS_KEY = "chat-mcp.session";
+let sessionId = localStorage.getItem(SS_KEY) || null;
+let streaming = false;
+
+const $msgs = document.getElementById("messages");
+const $input = document.getElementById("input");
+const $send = document.getElementById("send");
+const $pills = document.getElementById("pills");
+const $model = document.getElementById("model");
+const $newChat = document.getElementById("new-chat");
+
+$input.addEventListener("input", autosize);
+$input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    submit();
+  }
+});
+$send.addEventListener("click", submit);
+$newChat.addEventListener("click", async () => {
+  if (sessionId) {
+    try {
+      await fetch("/api/reset", {
+        method: "POST", headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({session_id: sessionId}),
+      });
+    } catch {}
+  }
+  sessionId = null;
+  localStorage.removeItem(SS_KEY);
+  $msgs.innerHTML = "";
+});
+
+function autosize() {
+  $input.style.height = "auto";
+  $input.style.height = Math.min($input.scrollHeight, 200) + "px";
+}
+
+function scrollDown() {
+  $msgs.scrollTop = $msgs.scrollHeight;
+}
+
+function addMessage(role, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  const r = document.createElement("div");
+  r.className = "role";
+  r.textContent = role === "user" ? "You" : "Assistant";
+  const b = document.createElement("div");
+  b.className = "body";
+  b.textContent = text;
+  div.appendChild(r);
+  div.appendChild(b);
+  $msgs.appendChild(div);
+  scrollDown();
+  return {div, body: b};
+}
+
+function ensureThinking(msg) {
+  let t = msg.div.querySelector(".thinking-block");
+  if (!t) {
+    t = document.createElement("details");
+    t.className = "thinking-block";
+    const s = document.createElement("summary");
+    s.textContent = "Thinking…";
+    const body = document.createElement("div");
+    body.className = "thinking-body";
+    t.appendChild(s);
+    t.appendChild(body);
+    msg.div.appendChild(t);
+  }
+  return t;
+}
+
+function addToolCall(msg, id, name, args) {
+  const el = document.createElement("div");
+  el.className = "tool-call pending";
+  el.dataset.id = id || "";
+  el.dataset.name = name || "";
+  const summary = name + "(" + previewArgs(args) + ")";
+  el.innerHTML = '<span class="spinner"></span><span class="arrow">→</span><span class="label"></span>';
+  el.querySelector(".label").textContent = summary;
+  msg.div.appendChild(el);
+  scrollDown();
+}
+
+function previewArgs(args) {
+  try {
+    const entries = Object.entries(args || {});
+    return entries.map(([k, v]) => {
+      let val;
+      if (typeof v === "string") val = '"' + (v.length > 60 ? v.slice(0, 60) + "…" : v) + '"';
+      else val = JSON.stringify(v);
+      return k + "=" + val;
+    }).join(", ");
+  } catch { return ""; }
+}
+
+function attachToolResult(msg, id, name, preview) {
+  // Find the pending tool-call by id+name
+  const calls = msg.div.querySelectorAll(".tool-call.pending");
+  let target = null;
+  for (const c of calls) {
+    if ((c.dataset.id && c.dataset.id === id) || (!id && c.dataset.name === name)) {
+      target = c; break;
+    }
+  }
+  if (!target && calls.length) target = calls[calls.length - 1];
+  if (target) target.classList.replace("pending", "done");
+
+  const det = document.createElement("details");
+  det.className = "tool-result";
+  const sum = document.createElement("summary");
+  sum.textContent = "↳ result (" + preview.length + " chars) — click to expand";
+  const body = document.createElement("div");
+  body.className = "tool-result-body";
+  body.textContent = preview;
+  det.appendChild(sum);
+  det.appendChild(body);
+  if (target) target.insertAdjacentElement("afterend", det);
+  else msg.div.appendChild(det);
+  scrollDown();
+}
+
+async function submit() {
+  if (streaming) return;
+  const text = $input.value.trim();
+  if (!text) return;
+  $input.value = "";
+  autosize();
+  streaming = true;
+  $send.disabled = true;
+
+  addMessage("user", text);
+  const assistant = addMessage("assistant", "");
+  let assistantContent = "";
+
+  try {
+    const resp = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text, session_id: sessionId}),
+    });
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error("HTTP " + resp.status + ": " + t);
+    }
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      let idx;
+      while ((idx = buf.indexOf("\n\n")) !== -1) {
+        const raw = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        for (const line of raw.split("\n")) {
+          if (!line.startsWith("data:")) continue;
+          const payload = line.slice(5).trim();
+          if (!payload) continue;
+          let evt;
+          try { evt = JSON.parse(payload); } catch { continue; }
+          handleEvent(evt, assistant, (c) => { assistantContent += c; });
+        }
+      }
+    }
+  } catch (err) {
+    const e = document.createElement("div");
+    e.className = "error";
+    e.textContent = "Error: " + (err.message || err);
+    assistant.div.appendChild(e);
+  } finally {
+    streaming = false;
+    $send.disabled = false;
+    $input.focus();
+  }
+}
+
+function handleEvent(evt, assistant, onContent) {
+  if (evt.type === "session") {
+    if (evt.session_id) {
+      sessionId = evt.session_id;
+      localStorage.setItem(SS_KEY, sessionId);
+    }
+  } else if (evt.type === "content") {
+    assistant.body.textContent += evt.text;
+    onContent(evt.text);
+    scrollDown();
+  } else if (evt.type === "thinking") {
+    const t = ensureThinking(assistant);
+    t.querySelector(".thinking-body").textContent += evt.text;
+    scrollDown();
+  } else if (evt.type === "tool_call") {
+    addToolCall(assistant, evt.id, evt.name, evt.args);
+  } else if (evt.type === "tool_result") {
+    attachToolResult(assistant, evt.id, evt.name, evt.preview || "");
+  } else if (evt.type === "error") {
+    const e = document.createElement("div");
+    e.className = "error";
+    e.textContent = evt.message;
+    assistant.div.appendChild(e);
+    scrollDown();
+  } else if (evt.type === "done") {
+    // nothing
+  }
+}
+
+async function loadStatus() {
+  try {
+    const r = await fetch("/api/mcp_status");
+    if (!r.ok) return;
+    const data = await r.json();
+    $model.textContent = data.model || "";
+    $pills.innerHTML = "";
+    for (const s of data.servers || []) {
+      const p = document.createElement("span");
+      p.className = "pill";
+      const cls = s.connected ? "up" : "down";
+      p.innerHTML = '<span class="dot ' + cls + '"></span>';
+      const label = document.createElement("span");
+      label.textContent = s.name + " (" + s.tool_count + ")";
+      p.appendChild(label);
+      p.title = s.connected
+        ? (s.url + " — " + s.tool_count + " tools")
+        : (s.url + " — disconnected: " + (s.error || "unknown"));
+      $pills.appendChild(p);
+    }
+  } catch (err) {
+    console.warn("status load failed", err);
+  }
+}
+
+loadStatus();
+setInterval(loadStatus, 30000);
+$input.focus();
+</script>
+</body>
+</html>

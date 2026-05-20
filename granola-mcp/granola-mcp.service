@@ -1,0 +1,17 @@
+[Unit]
+Description=Granola MCP Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/projects/granola-mcp
+ExecStart=%h/projects/granola-mcp/venv/bin/python %h/projects/granola-mcp/main.py
+Restart=on-failure
+RestartSec=10
+
+StandardOutput=append:%h/.granola-mcp/sync.log
+StandardError=append:%h/.granola-mcp/sync.log
+
+[Install]
+WantedBy=default.target

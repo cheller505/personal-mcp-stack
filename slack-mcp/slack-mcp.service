@@ -1,0 +1,17 @@
+[Unit]
+Description=Slack MCP Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/projects/slack-mcp
+ExecStart=%h/projects/slack-mcp/venv/bin/python %h/projects/slack-mcp/main.py
+Restart=on-failure
+RestartSec=10
+
+StandardOutput=append:%h/.slack-mcp/sync.log
+StandardError=append:%h/.slack-mcp/sync.log
+
+[Install]
+WantedBy=default.target

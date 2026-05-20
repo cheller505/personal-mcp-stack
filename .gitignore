@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Local environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# SQLite databases (these live in ~/.{svc}-mcp/ not in repo, but defense in depth)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Any secret files that might accidentally land in tree
+secrets.json
+*.key
+*.pem
+token_cache.json
+config.json
+
+# Backups
+*.bak
+*.orig

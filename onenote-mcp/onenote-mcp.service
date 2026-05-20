@@ -1,0 +1,22 @@
+[Unit]
+Description=OneNote MCP Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/projects/onenote-mcp
+ExecStart=%h/projects/onenote-mcp/venv/bin/python %h/projects/onenote-mcp/main.py
+Restart=on-failure
+RestartSec=10
+
+Environment=ONENOTE_MCP_CLIENT_ID=<your-azure-app-client-id>
+Environment=ONENOTE_MCP_TENANT_ID=<your-azure-tenant-id>
+Environment=ONENOTE_MCP_HOST=127.0.0.1
+Environment=ONENOTE_MCP_PORT=8769
+
+StandardOutput=append:%h/.onenote-mcp/sync.log
+StandardError=append:%h/.onenote-mcp/sync.log
+
+[Install]
+WantedBy=default.target

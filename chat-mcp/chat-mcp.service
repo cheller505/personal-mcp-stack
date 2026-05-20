@@ -1,0 +1,17 @@
+[Unit]
+Description=Chat MCP web UI (Lumen-backed)
+After=network-online.target email-mcp.service slack-mcp.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/projects/chat-mcp
+ExecStart=%h/projects/chat-mcp/venv/bin/python %h/projects/chat-mcp/main.py
+Restart=on-failure
+RestartSec=10
+
+StandardOutput=append:%h/.chat-mcp/chat.log
+StandardError=append:%h/.chat-mcp/chat.log
+
+[Install]
+WantedBy=default.target
