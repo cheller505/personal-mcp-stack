@@ -10,8 +10,8 @@ ExecStart=%h/projects/onenote-mcp/venv/bin/python %h/projects/onenote-mcp/main.p
 Restart=on-failure
 RestartSec=10
 
-Environment=ONENOTE_MCP_CLIENT_ID=<your-azure-app-client-id>
-Environment=ONENOTE_MCP_TENANT_ID=<your-azure-tenant-id>
+Environment=ONENOTE_MCP_CLIENT_ID=
+Environment=ONENOTE_MCP_TENANT_ID=
 Environment=ONENOTE_MCP_HOST=127.0.0.1
 Environment=ONENOTE_MCP_PORT=8769
 

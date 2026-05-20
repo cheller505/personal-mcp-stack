@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 CONFIG_DIR = Path.home() / ".onenote-mcp"
 TOKEN_CACHE_PATH = CONFIG_DIR / "token_cache.json"
 
-DEFAULT_CLIENT_ID = "<your-azure-app-client-id>"
-DEFAULT_TENANT_ID = "<your-azure-tenant-id>"
 
 # NOTE: do NOT add "offline_access" — MSAL hard-rejects it as a reserved scope.
 SCOPES = ["Notes.Read.All", "Notes.ReadWrite", "Notes.Create"]

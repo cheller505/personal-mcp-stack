@@ -212,9 +212,9 @@ directly via the MCP API for operational scripts.
 
 ### Azure app (shared between email-mcp and onenote-mcp)
 
-- App name: `clawpi-openclaw`
+- App name: `<your-app-name>`
 - Client ID: `<your-azure-app-client-id>`
-- Tenant ID: `<your-azure-tenant-id>` (UIUC)
+- Tenant ID: `<your-azure-tenant-id>`
 - Defaults baked into `email_mcp/auth.py` and `onenote_mcp/auth.py` — no env var needed
 - Delegated permissions granted: `Mail.Read`, `Mail.ReadWrite`,
   `Notes.Create`, `Notes.Read`, `Notes.Read.All`, `Notes.ReadWrite`
