@@ -1,0 +1,32 @@
+name: syntax-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  py-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: byte-compile every .py
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find . -type f -name '*.py' \
+            -not -path './*/venv/*' -not -path './*/__pycache__/*')
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no .py files found"; exit 1
+          fi
+          echo "compiling ${#files[@]} files"
+          python -m py_compile "${files[@]}"
+
+      - name: shellcheck *.sh
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          # Don't fail on style issues; only on real errors (-S error)
+          find . -type f -name '*.sh' -not -path './*/venv/*' \
+            -exec shellcheck -S error {} +
