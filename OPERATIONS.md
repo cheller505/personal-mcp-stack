@@ -172,7 +172,7 @@ journalctl --user -u chat-mcp -f
 
 ```json
 {
-  "lumen": {                                  
+  "llm": {                                    
     "endpoint": "http://127.0.0.1:11434",     // local Ollama
     "api_key": "ollama",                      // Ollama ignores
     "model": "qwen3:32b",                     // see "Model selection" below
@@ -513,7 +513,7 @@ fan-out across all 5 sources.
   to the existing Azure app.
 - **2026-05-19 evening** — Built `slack-mcp` after enabling user OAuth on a fresh Slack app.
 - **2026-05-20 morning** — Built `chat-mcp` for the chat UI. Initially pointed at the operator's organisation's
-  Lumen LLM gateway with Nemotron. Hit various Tailscale Serve enablement issues.
+  remote OpenAI-compatible LLM gateway with Nemotron. Hit various Tailscale Serve enablement issues.
 - **2026-05-20 midday** — Migrated everything from <source-host> to <runtime-host> so the LLM could
   run locally. Dropped Tailscale Serve in favor of binding to `0.0.0.0:8082`. Switched
   model to local Ollama qwen3:32b (after qwen3-coder crashed on GB10).

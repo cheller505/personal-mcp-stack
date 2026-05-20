@@ -12,7 +12,7 @@ CONFIG_PATH = CONFIG_DIR / "config.json"
 
 
 @dataclass
-class LumenConfig:
+class LLMConfig:
     endpoint: str
     api_key: str
     model: str
@@ -27,7 +27,7 @@ class BindConfig:
 
 @dataclass
 class Config:
-    lumen: LumenConfig
+    llm: LLMConfig
     mcp_servers: dict[str, str]
     bind: BindConfig
     allowed_users: list[str] = field(default_factory=list)
@@ -39,13 +39,16 @@ class Config:
         if not CONFIG_PATH.exists():
             raise FileNotFoundError(
                 f"Missing config at {CONFIG_PATH}. "
-                "Create it with lumen creds + mcp_servers map."
+                "Create it with llm creds + mcp_servers map."
             )
         raw = json.loads(CONFIG_PATH.read_text())
-        lumen = LumenConfig(**raw["lumen"])
+        llm_raw = raw.get("llm") or raw.get("lumen")  # accept either key
+        if llm_raw is None:
+            raise ValueError("config.json must contain an 'llm' (or legacy 'lumen') block")
+        llm = LLMConfig(**llm_raw)
         bind = BindConfig(**raw.get("bind", {}))
         return cls(
-            lumen=lumen,
+            llm=llm,
             mcp_servers=dict(raw["mcp_servers"]),
             bind=bind,
             allowed_users=list(raw.get("allowed_users", [])),

@@ -43,7 +43,7 @@ def build_app(cfg: Config, pool: MCPPool, llm: LLMClient) -> FastAPI:
     @app.get("/api/mcp_status")
     async def mcp_status(_user: str = Depends(require_user)):
         return {
-            "model": cfg.lumen.model,
+            "model": cfg.llm.model,
             "servers": pool.status(),
         }
 

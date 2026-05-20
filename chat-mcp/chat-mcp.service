@@ -1,5 +1,5 @@
 [Unit]
-Description=Chat MCP web UI (Lumen-backed)
+Description=Chat MCP web UI (OpenAI-compatible LLM backend)
 After=network-online.target email-mcp.service slack-mcp.service
 Wants=network-online.target
 

@@ -1,6 +1,6 @@
 {
   "_comment": "Copy this to /data/.chat-mcp/config.json inside the chat-mcp container's volume. URLs use docker network service names, not localhost.",
-  "lumen": {
+  "llm": {
     "endpoint": "http://ollama:11434",
     "api_key": "ollama",
     "model": "qwen3:32b",

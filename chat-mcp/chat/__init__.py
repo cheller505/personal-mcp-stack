@@ -1,1 +1,1 @@
-"""chat-mcp — FastAPI chat UI bridging Lumen LLM to local MCP servers."""
+"""chat-mcp — FastAPI chat UI bridging an OpenAI-compatible LLM to local MCP servers."""

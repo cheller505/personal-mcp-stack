@@ -35,12 +35,12 @@ async def main() -> None:
     log = logging.getLogger("chat-mcp")
 
     cfg = Config.load()
-    log.info("Loaded config: model=%s, %d MCP servers", cfg.lumen.model, len(cfg.mcp_servers))
+    log.info("Loaded config: model=%s, %d MCP servers", cfg.llm.model, len(cfg.mcp_servers))
 
     pool = MCPPool(cfg.mcp_servers, hidden_tools=cfg.hidden_tools)
     await pool.startup()
 
-    llm = LLMClient(cfg.lumen)
+    llm = LLMClient(cfg.llm)
 
     app = build_app(cfg, pool, llm)
 

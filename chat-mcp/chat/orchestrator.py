@@ -81,7 +81,7 @@ class Orchestrator:
                 yield {"type": "error", "message": f"LLM error: {exc}"}
                 return
 
-            # Lumen quirk: content may be empty while reasoning has the answer
+            # Reasoning-model quirk: content may be empty while reasoning has the answer
             if not assistant_content and assistant_reasoning and not tool_calls:
                 assistant_content = assistant_reasoning
 

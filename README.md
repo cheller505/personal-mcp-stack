@@ -31,7 +31,7 @@ network.
 
 | Component       | Default                                     | Where to configure |
 |---|---|---|
-| LLM             | **`qwen3:32b`** (via local [Ollama](https://ollama.com)) | `~/.chat-mcp/config.json` → `lumen.model` |
+| LLM             | **`qwen3:32b`** (via local [Ollama](https://ollama.com)) | `~/.chat-mcp/config.json` → `llm.model` |
 | Chat UI port    | `:8082`                                     | `~/.chat-mcp/config.json` → `bind` |
 | email-mcp port  | `:8765`                                     | `EMAIL_MCP_PORT` env var |
 | clickup-mcp port| `:8767`                                     | `CLICKUP_MCP_PORT` env var |
@@ -141,7 +141,7 @@ docker compose up -d
 Notes:
 - The included `ollama` service uses the NVIDIA Container Toolkit; if you
   don't have a GPU or want to point at an existing Ollama, remove the
-  `ollama` service block and change `lumen.endpoint` in the chat config
+  `ollama` service block and change `llm.endpoint` in the chat config
   to your endpoint.
 - All ports are configurable in `.env` (e.g. set `EMAIL_MCP_HOST_PORT=18765`
   to run the docker stack alongside an existing systemd install).
@@ -262,8 +262,8 @@ Not credentials per se, but the chat UI needs an LLM endpoint:
 3. Configure in `~/.chat-mcp/config.json` (see SETUP.md section 5b).
 
 Alternative: any OpenAI-compatible remote endpoint (vLLM, LiteLLM,
-OpenRouter, OpenAI itself) works just as well — set `lumen.endpoint` and
-`lumen.api_key` accordingly. Data sent during chat will leave your network.
+OpenRouter, OpenAI itself) works just as well — set `llm.endpoint` and
+`llm.api_key` accordingly. Data sent during chat will leave your network.
 
 ### Security notes for tokens
 

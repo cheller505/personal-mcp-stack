@@ -1,4 +1,4 @@
-"""Async client for Lumen's OpenAI-compatible /v1/chat/completions endpoint.
+"""Async client for an OpenAI-compatible /v1/chat/completions endpoint.
 
 Streams SSE. Yields ChatChunk objects with separate `delta_content`,
 `delta_reasoning`, and accumulated `tool_calls`. Handles 429 with backoff.
@@ -12,7 +12,7 @@ from typing import AsyncIterator
 
 import httpx
 
-from .config import LumenConfig
+from .config import LLMConfig
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class _PartialToolCall:
 
 
 class LLMClient:
-    def __init__(self, cfg: LumenConfig) -> None:
+    def __init__(self, cfg: LLMConfig) -> None:
         self._cfg = cfg
         self._client = httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=15.0))
 
@@ -83,7 +83,7 @@ class LLMClient:
                 status = exc.response.status_code if exc.response is not None else 0
                 if status == 429 and attempt < max_retries:
                     delay = min(2 ** attempt * 4, 30)
-                    logger.warning("Lumen 429 — backing off %ds (attempt %d)", delay, attempt + 1)
+                    logger.warning("LLM 429 — backing off %ds (attempt %d)", delay, attempt + 1)
                     await asyncio.sleep(delay)
                     attempt += 1
                     continue
@@ -100,7 +100,7 @@ class LLMClient:
             if resp.status_code >= 400:
                 txt = await resp.aread()
                 resp_text = txt.decode("utf-8", errors="replace")[:2000]
-                logger.error("Lumen HTTP %d: %s", resp.status_code, resp_text)
+                logger.error("LLM HTTP %d: %s", resp.status_code, resp_text)
                 resp.raise_for_status()
 
             async for line in resp.aiter_lines():
