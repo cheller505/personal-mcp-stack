@@ -27,6 +27,43 @@ network.
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+## Stack at a glance
+
+| Component       | Default                                     | Where to configure |
+|---|---|---|
+| LLM             | **`qwen3:32b`** (via local [Ollama](https://ollama.com)) | `~/.chat-mcp/config.json` → `lumen.model` |
+| Chat UI port    | `:8082`                                     | `~/.chat-mcp/config.json` → `bind` |
+| email-mcp port  | `:8765`                                     | `EMAIL_MCP_PORT` env var |
+| clickup-mcp port| `:8767`                                     | `CLICKUP_MCP_PORT` env var |
+| granola-mcp port| `:8768`                                     | `GRANOLA_MCP_PORT` env var |
+| onenote-mcp port| `:8769`                                     | `ONENOTE_MCP_PORT` env var |
+| slack-mcp port  | `:8770`                                     | `SLACK_MCP_PORT` env var |
+| Sync cadence    | 10–30 min (per source)                      | per-MCP `main.py` APScheduler interval |
+| Storage         | per-source SQLite under `~/.<svc>-mcp/`     | not configurable (relative to `$HOME`) |
+
+The default model `qwen3:32b` was chosen for ~5–8 s warm tool-call latency
+with strong tool-calling accuracy; see `OPERATIONS.md` gotcha #8 for why
+`qwen3-coder:30b` was rejected and `nemotron-3-super:120b-a12b` is supported
+but slow. You can swap to anything else OpenAI-compatible (local or remote)
+without code changes — see the [Local LLM (Ollama)](#local-llm-ollama)
+section below.
+
+## Credentials at a glance
+
+You need credentials only for the sources you want to sync. Each link below
+goes to the page where you generate the token. The full step-by-step is in
+the [Credentials you'll need](#credentials-youll-need) section below; this
+table is the index.
+
+| Source        | What you generate            | Where                                                       |
+|---|---|---|
+| email-mcp     | Azure app + delegated scopes | https://portal.azure.com → App registrations                |
+| onenote-mcp   | (reuses email-mcp's Azure app) | same as above, just add `Notes.*` permissions             |
+| clickup-mcp   | Personal API Token (`pk_…`)  | https://app.clickup.com → avatar → Settings → Apps          |
+| granola-mcp   | Enterprise API Key (`sk_…`)  | Granola → Settings → Workspaces → API (Enterprise plan)     |
+| slack-mcp     | User OAuth Token (`xoxp-…`)  | https://api.slack.com/apps → new app → User Token Scopes    |
+| chat-mcp LLM  | nothing if local Ollama; API key if remote endpoint | https://ollama.com (local) or your provider |
+
 ## Why this exists
 
 - **Privacy.** Your work data never leaves your network. The LLM is local.
@@ -48,6 +85,8 @@ network.
   time. The auth layer is a stub.
 
 ## Quick start
+
+> Before either path: skim the [Credentials at a glance](#credentials-at-a-glance) table above to know what you'll be asked for. Then pick one path:
 
 ### Option A — let Claude Code set it up for you
 
