@@ -49,6 +49,26 @@ network.
 
 ## Quick start
 
+### Option A — let Claude Code set it up for you
+
+If you have [Claude Code](https://claude.ai/code) (or Codex, Aider, or any
+other agentic coding tool that can read a repo's `CLAUDE.md`) installed on
+the target host, you can paste this prompt and let it drive the install
+interactively:
+
+> Set up the personal-mcp-stack project on this machine. Clone
+> `https://github.com/cheller505/personal-mcp-stack.git` into `~/projects/`,
+> then read `~/projects/CLAUDE.md` and follow it. Walk me through each
+> credential I need to provide; do not invent values. Use the existing
+> `bootstrap.sh` and `health_check.sh` scripts as documented.
+
+`CLAUDE.md` is the agent-facing reference; it covers prerequisite checks,
+install order, per-source credential prompts, common failure modes, and
+verification steps.
+
+### Option B — manual install
+
+
 You need:
 - Linux host (tested on Ubuntu 24.04 on ARM/GB10; should work on x86)
 - Python 3.11+
