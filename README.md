@@ -86,6 +86,113 @@ cd ~/projects
 See **`SETUP.md`** for the full step-by-step (token generation, Azure app
 registration, per-source quirks).
 
+## Credentials you'll need
+
+You only need credentials for the sources you actually want to sync. Each link
+below opens the page where you'll generate the token / API key / register the
+app. **`SETUP.md` has the full step-by-step**, including scopes and gotchas;
+this is just a one-stop summary of *what* you need *from where*.
+
+### Microsoft 365 mail + OneNote (shared Azure app)
+
+You register **one** Azure app and use it for both `email-mcp` and
+`onenote-mcp`.
+
+1. **https://portal.azure.com** → sign in with your work account.
+2. **App registrations** → **New registration**.
+   - Name: anything (e.g. `personal-mcp`)
+   - Supported account types: usually "this organisational directory only"
+   - Leave redirect URI blank.
+3. After creation, copy the **Application (client) ID** and **Directory
+   (tenant) ID**.
+4. **API permissions** → **Add a permission** → **Microsoft Graph** →
+   **Delegated permissions**, then add:
+   - For email: `Mail.Read`, `Mail.ReadWrite`
+   - For OneNote: `Notes.Read`, `Notes.Read.All`, `Notes.ReadWrite`,
+     `Notes.Create`
+   - **Do NOT add `offline_access`** — MSAL adds it implicitly and rejects
+     explicit requests for it.
+5. Click **Grant admin consent**. Your tenant may require an admin to
+   approve.
+6. **Authentication** → **Add a platform** → **Mobile and desktop
+   applications** → tick `https://login.microsoftonline.com/common/oauth2/nativeclient`.
+7. Set environment variables:
+   ```bash
+   export EMAIL_MCP_CLIENT_ID=<application-client-id>
+   export EMAIL_MCP_TENANT_ID=<directory-tenant-id>
+   export ONENOTE_MCP_CLIENT_ID=<same-application-client-id>
+   export ONENOTE_MCP_TENANT_ID=<same-directory-tenant-id>
+   ```
+   (Or edit the systemd unit files at
+   `~/.config/systemd/user/{email,onenote}-mcp.service`.)
+8. Run each service interactively once to complete the device-code flow.
+   A short code prints; visit `https://microsoft.com/devicelogin` on any
+   browser, paste the code, sign in.
+
+### ClickUp
+
+1. Open **https://app.clickup.com** → click your avatar (bottom-left)
+2. **Settings** → **Apps**
+3. Under **API Token**, click **Generate** (token starts with `pk_…`)
+4. Run `clickup-mcp/main.py` interactively; it prompts and saves to
+   `~/.clickup-mcp/config.json`.
+
+### Granola (Enterprise plan required)
+
+1. Open Granola → **Settings** → **Workspaces** → **API** tab
+2. Click **Generate API Key** (starts with `sk_…`)
+3. Run `granola-mcp/main.py` interactively; saved to
+   `~/.granola-mcp/config.json`.
+
+### Slack (user-token, not bot-token)
+
+1. **https://api.slack.com/apps** → **Create New App** → **From scratch** →
+   pick your workspace
+2. **OAuth & Permissions** → scroll to **User Token Scopes** (NOT the Bot
+   Token Scopes section above it — they're separate boxes on the same page)
+3. Add user scopes:
+   ```
+   channels:read    channels:history
+   groups:read      groups:history
+   im:read          im:history
+   mpim:read        mpim:history
+   users:read       users:read.email
+   files:read       team:read        reactions:read
+   ```
+4. Scroll back up → **Install to Workspace** → approve. Your workspace admin
+   may need to approve this.
+5. After install, the page shows a **User OAuth Token** starting with `xoxp-…`.
+   Copy it.
+6. Run `slack-mcp/main.py` interactively; saved to
+   `~/.slack-mcp/config.json`.
+
+### Local LLM (Ollama)
+
+Not credentials per se, but the chat UI needs an LLM endpoint:
+
+1. Install [Ollama](https://ollama.com): `curl -fsSL https://ollama.com/install.sh | sh`
+2. Pull a model with strong tool calling and a manageable size:
+   - `ollama pull qwen3:32b` (~17 GB, recommended)
+   - or `ollama pull qwen3-coder:30b` (similar size; may not work on all GPU
+     architectures — see OPERATIONS.md gotcha #8)
+   - or any other OpenAI-compatible model you prefer
+3. Configure in `~/.chat-mcp/config.json` (see SETUP.md section 5b).
+
+Alternative: any OpenAI-compatible remote endpoint (vLLM, LiteLLM,
+OpenRouter, OpenAI itself) works just as well — set `lumen.endpoint` and
+`lumen.api_key` accordingly. Data sent during chat will leave your network.
+
+### Security notes for tokens
+
+- All tokens go into files at `~/.<service>-mcp/{config.json|token_cache.json}`,
+  always chmod 600.
+- The repo's `.gitignore` excludes these paths defensively.
+- Don't commit `~/.<service>-mcp/` content. Nothing under `~/.<service>-mcp/`
+  is in the repo tree — it lives in your home directory.
+- If a token leaks, rotate it at the source (regenerate in the upstream's
+  settings) and update the local file. The MCPs will pick up the new value
+  on next restart.
+
 ## Documentation map
 
 | File | What it is |

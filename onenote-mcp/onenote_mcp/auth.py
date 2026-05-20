@@ -90,7 +90,7 @@ def acquire_token_device_code(cache: msal.SerializableTokenCache) -> dict:
     print(f"\n  Step 2 — Enter this code when prompted:")
     print(f"\n      {user_code}")
     print(f"\n  The code expires in approximately 15 minutes.")
-    print(f"  This machine (<source-host>) has no browser — use another device.")
+    print(f"  If this machine has no browser, complete the sign-in on a phone or laptop.")
     print(f"  Sign in with your Microsoft account to grant OneNote access.")
     print(f"{border}\n")
     print("Waiting for you to complete authentication...\n")

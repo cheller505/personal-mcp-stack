@@ -5,7 +5,7 @@ Granola meeting notes, and OneNote into local SQLite caches, serve them via
 the Model Context Protocol (MCP) over SSE, and front them with a small chat
 web UI backed by a local LLM running on the same host.
 
-**Built:** 2026-05-19 → 2026-05-20.  **Host:** `<runtime-host>` (NCSA, ARM/GB10).
+**Built:** 2026-05-19 → 2026-05-20.  **Host:** `<runtime-host>` (the operator's organisation, ARM/GB10).
 **Access:** LAN + Tailscale only. No public endpoint.
 
 ---
@@ -25,7 +25,7 @@ web UI backed by a local LLM running on the same host.
 ## Architecture
 
 ```
-┌─────────────────────── <runtime-host> (NCSA, ARM/GB10) ─────────────────────┐
+┌─────────────────────── <runtime-host> (the operator's organisation, ARM/GB10) ─────────────────────┐
 │                                                                       │
 │  Browser (LAN or Tailscale)                                           │
 │         │                                                             │
@@ -87,7 +87,7 @@ the pattern for all.
 ### <runtime-host> (current production)
 
 ```
-/home/cheller/projects/
+~/projects/
 ├── email-mcp/                  # source code
 ├── clickup-mcp/
 ├── granola-mcp/
@@ -512,7 +512,7 @@ fan-out across all 5 sources.
   reworked to flat-section enumeration with `$expand=parentNotebook`. Granted Notes scopes
   to the existing Azure app.
 - **2026-05-19 evening** — Built `slack-mcp` after enabling user OAuth on a fresh Slack app.
-- **2026-05-20 morning** — Built `chat-mcp` for the chat UI. Initially pointed at NCSA's
+- **2026-05-20 morning** — Built `chat-mcp` for the chat UI. Initially pointed at the operator's organisation's
   Lumen LLM gateway with Nemotron. Hit various Tailscale Serve enablement issues.
 - **2026-05-20 midday** — Migrated everything from <source-host> to <runtime-host> so the LLM could
   run locally. Dropped Tailscale Serve in favor of binding to `0.0.0.0:8082`. Switched

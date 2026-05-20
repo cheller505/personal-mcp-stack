@@ -51,7 +51,7 @@ cat <<EOF
 │    tailscale serve --bg http://127.0.0.1:8080                    │
 │                                                                  │
 │  The chat UI will then be at:                                    │
-│    https://<source-host>.<your-tailnet>.ts.net/                       │
+│    https://<host>.<your-tailnet>.ts.net/                       │
 │                                                                  │
 │  Check tailscale serve status:                                   │
 │    tailscale serve status                                        │

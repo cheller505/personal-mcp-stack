@@ -15,7 +15,7 @@ I work in research computing. My day's information lives in five systems:
 - **A notebook** (OneNote). Years of accumulated working notes.
 
 Each system has a search box. None of them search the others. When I want to
-answer "what did Chuck and I talk about regarding splitting the ICCP stats" or
+answer "what did my manager and I discuss about that infrastructure decision" or
 "what should I work on next week given everything that's been flying at me",
 I can't.
 
