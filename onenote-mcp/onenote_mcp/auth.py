@@ -19,11 +19,24 @@ SCOPES = ["Notes.Read.All", "Notes.ReadWrite", "Notes.Create"]
 
 
 def get_client_id() -> str:
-    return os.environ.get("ONENOTE_MCP_CLIENT_ID", DEFAULT_CLIENT_ID).strip() or DEFAULT_CLIENT_ID
+    cid = os.environ.get("ONENOTE_MCP_CLIENT_ID", "").strip()
+    if not cid:
+        raise ValueError(
+            "ONENOTE_MCP_CLIENT_ID is not set. Register an Azure app and "
+            "export ONENOTE_MCP_CLIENT_ID and ONENOTE_MCP_TENANT_ID. "
+            "Same Azure app can serve both email-mcp and onenote-mcp. See SETUP.md."
+        )
+    return cid
 
 
 def get_tenant_id() -> str:
-    return os.environ.get("ONENOTE_MCP_TENANT_ID", DEFAULT_TENANT_ID).strip() or DEFAULT_TENANT_ID
+    tid = os.environ.get("ONENOTE_MCP_TENANT_ID", "").strip()
+    if not tid:
+        raise ValueError(
+            "ONENOTE_MCP_TENANT_ID is not set. Use your Azure directory "
+            "(tenant) ID, or 'organizations' for any org account. See SETUP.md."
+        )
+    return tid
 
 
 def load_token_cache() -> msal.SerializableTokenCache:

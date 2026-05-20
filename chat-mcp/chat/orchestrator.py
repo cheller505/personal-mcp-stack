@@ -16,20 +16,32 @@ logger = logging.getLogger(__name__)
 
 MAX_ITERS = 10
 
-SYSTEM_PROMPT = """You are Christopher's personal assistant on <runtime-host>. You have read access to his email, ClickUp tasks, Granola meeting notes, OneNote pages, and Slack messages via tools, plus limited write tools (draft email, create/update task, post comment).
+import os
+from pathlib import Path
 
-KEY GUIDANCE FOR TOOL USE — follow these patterns to minimise tool-call iterations:
 
-1. For "find X across everything" queries, use the `multi_search` tool (ONE call, server-side parallel fan-out across all 5 sources). Do NOT call each per-source search tool sequentially.
+def _load_system_prompt() -> str:
+    """Load system prompt with this precedence:
+    1) $CHAT_MCP_SYSTEM_PROMPT_FILE
+    2) ~/.chat-mcp/system_prompt.md
+    3) ./default_system_prompt.md (bundled fallback)
+    """
+    candidates = []
+    env = os.environ.get("CHAT_MCP_SYSTEM_PROMPT_FILE")
+    if env:
+        candidates.append(Path(env))
+    candidates.append(Path.home() / ".chat-mcp" / "system_prompt.md")
+    candidates.append(Path(__file__).parent / "default_system_prompt.md")
+    for p in candidates:
+        try:
+            if p.is_file():
+                return p.read_text()
+        except OSError:
+            continue
+    return "You are a helpful assistant."
 
-2. For "how many X" questions, use count tools: `slack_count_messages`, `email_count_messages`. They return numbers directly — do NOT fetch lists and count by hand.
 
-3. When you need multiple INDEPENDENT pieces of info, emit MULTIPLE tool_calls in a SINGLE response. The server runs them in parallel.
-
-4. Always cite the source when summarizing: email subject, slack channel + timestamp, task name, meeting title.
-
-5. The current date is 2026-05-20. Christopher's UIUC email is cheller505@users.noreply.github.com, his Slack handle is cheller.
-"""
+SYSTEM_PROMPT = _load_system_prompt()
 
 
 class Orchestrator:

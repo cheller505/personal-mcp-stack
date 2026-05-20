@@ -13,16 +13,25 @@ TOKEN_CACHE_PATH = CONFIG_DIR / "token_cache.json"
 
 SCOPES = ["Mail.Read", "Mail.ReadWrite"]
 
-DEFAULT_CLIENT_ID = "<your-azure-app-client-id>"
-DEFAULT_TENANT_ID = "<your-azure-tenant-id>"
-
 
 def get_client_id() -> str:
-    return os.environ.get("EMAIL_MCP_CLIENT_ID", DEFAULT_CLIENT_ID).strip() or DEFAULT_CLIENT_ID
+    cid = os.environ.get("EMAIL_MCP_CLIENT_ID", "").strip()
+    if not cid:
+        raise ValueError(
+            "EMAIL_MCP_CLIENT_ID is not set. Register an Azure app and "
+            "export EMAIL_MCP_CLIENT_ID and EMAIL_MCP_TENANT_ID. See SETUP.md."
+        )
+    return cid
 
 
 def get_tenant_id() -> str:
-    return os.environ.get("EMAIL_MCP_TENANT_ID", DEFAULT_TENANT_ID).strip() or DEFAULT_TENANT_ID
+    tid = os.environ.get("EMAIL_MCP_TENANT_ID", "").strip()
+    if not tid:
+        raise ValueError(
+            "EMAIL_MCP_TENANT_ID is not set. Use your Azure directory "
+            "(tenant) ID, or 'organizations' for any org account. See SETUP.md."
+        )
+    return tid
 
 
 def load_token_cache() -> msal.SerializableTokenCache:

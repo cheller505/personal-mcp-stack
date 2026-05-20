@@ -142,6 +142,34 @@ class MCPPool:
                 },
             },
         })
+        out.append({
+            "type": "function",
+            "function": {
+                "name": "priority_digest",
+                "description": (
+                    "Return a cross-source digest of likely priorities: open ClickUp tasks (most-recently-updated first), "
+                    "recent unread emails from real humans, recent Slack DMs/MPIMs from teammates with question marks "
+                    "(proxy for asks), and recent meetings. Use this for questions like 'what should I work on', "
+                    "'what are my priorities', 'what is on my plate', 'what is urgent', 'triage my inbox', "
+                    "'summarize my agenda', or any other broad prioritization / agenda / triage question. "
+                    "Returns a single structured markdown digest in ONE call — do NOT call multi_search for these."
+                ),
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "days_email": {"type": "integer", "default": 7,
+                            "description": "Window for unread emails (days)"},
+                        "days_slack": {"type": "integer", "default": 3,
+                            "description": "Window for recent Slack messages from teammates (days)"},
+                        "days_meetings": {"type": "integer", "default": 14,
+                            "description": "Window for recent meetings (days)"},
+                        "top_tasks": {"type": "integer", "default": 20,
+                            "description": "How many open tasks to surface (newest-updated first)"}
+                    },
+                    "required": []
+                },
+            },
+        })
         return out
 
     def tool_list(self) -> list[dict]:
@@ -173,6 +201,8 @@ class MCPPool:
     async def call(self, qualified_name: str, arguments: dict) -> str:
         if qualified_name == "multi_search":
             return await self._multi_search(arguments)
+        if qualified_name == "priority_digest":
+            return await self._priority_digest(arguments)
         split = self._split_qname(qualified_name)
         if split is None:
             return f"[error] cannot route tool name: {qualified_name}"
@@ -248,3 +278,131 @@ class MCPPool:
         for source, text in results:
             chunks.append(f"=== {source.upper()} ===\n{text.strip() or "(no results)"}\n")
         return "\n".join(chunks)
+
+
+    async def _priority_digest(self, arguments: dict) -> str:
+        """Cross-source digest for prioritization / triage / agenda questions."""
+        import sqlite3
+        from pathlib import Path
+
+        days_email = int(arguments.get("days_email", 7))
+        days_slack = int(arguments.get("days_slack", 3))
+        days_meetings = int(arguments.get("days_meetings", 14))
+        top_tasks = int(arguments.get("top_tasks", 20))
+
+        home = Path.home()
+        paths = {
+            "clickup": home / ".clickup-mcp" / "clickup.db",
+            "email":   home / ".email-mcp" / "mail.db",
+            "slack":   home / ".slack-mcp" / "slack.db",
+            "granola": home / ".granola-mcp" / "granola.db",
+        }
+
+        def _query(db_path, sql, params=()):
+            if not db_path.exists():
+                return []
+            conn = sqlite3.connect(str(db_path))
+            try:
+                return conn.execute(sql, params).fetchall()
+            finally:
+                conn.close()
+
+        loop = asyncio.get_running_loop()
+
+        async def _tasks():
+            return await loop.run_in_executor(None, _query, paths["clickup"], """
+                SELECT name,
+                       date(CAST(date_updated AS INTEGER)/1000,'unixepoch') AS upd,
+                       status,
+                       CASE WHEN due_date IS NOT NULL AND due_date != ''
+                            THEN date(CAST(due_date AS INTEGER)/1000,'unixepoch') ELSE '' END AS due
+                FROM tasks
+                WHERE is_closed = 0
+                ORDER BY CAST(date_updated AS INTEGER) DESC
+                LIMIT ?
+                """, (top_tasks,))
+
+        async def _emails():
+            return await loop.run_in_executor(None, _query, paths["email"], """
+                SELECT date(received_datetime) AS d,
+                       COALESCE(NULLIF(sender_name,''), sender_email) AS who,
+                       sender_email,
+                       substr(subject, 1, 100) AS subj
+                FROM messages
+                WHERE is_read = 0
+                  AND date(received_datetime) >= date('now', ?)
+                  AND sender_email NOT LIKE '%no-reply%'
+                  AND sender_email NOT LIKE '%noreply%'
+                  AND sender_email NOT LIKE '%notifications@%'
+                  AND sender_email NOT LIKE 'root@%'
+                  AND sender_email NOT LIKE '%login%'
+                  AND sender_email NOT LIKE '%flowserver%'
+                  AND sender_email NOT LIKE 'wiki@%'
+                  AND sender_email NOT LIKE 'help+jira%'
+                ORDER BY received_datetime DESC
+                LIMIT 30
+                """, (f"-{days_email} days",))
+
+        async def _slack():
+            return await loop.run_in_executor(None, _query, paths["slack"], """
+                SELECT datetime(CAST(m.ts AS REAL),'unixepoch') AS when_,
+                       COALESCE(NULLIF(u.real_name,''), u.name) AS who,
+                       c.type AS ctype,
+                       COALESCE(c.name, '') AS cname,
+                       substr(REPLACE(m.text, char(10), ' '), 1, 140) AS text
+                FROM messages m
+                JOIN users u ON u.id = m.user_id
+                JOIN conversations c ON c.id = m.channel_id
+                WHERE u.is_bot = 0
+                  AND u.is_deleted = 0
+                  AND u.name != 'cheller'
+                  AND CAST(m.ts AS REAL) >= strftime('%s','now', ?)
+                  AND (m.text LIKE '%?%' OR c.type IN ('im','mpim'))
+                ORDER BY CAST(m.ts AS REAL) DESC
+                LIMIT 30
+                """, (f"-{days_slack} days",))
+
+        async def _meetings():
+            return await loop.run_in_executor(None, _query, paths["granola"], """
+                SELECT date(created_at) AS d,
+                       substr(COALESCE(NULLIF(title,''), calendar_event_title, '(untitled)'), 1, 110) AS title
+                FROM notes
+                WHERE date(created_at) >= date('now', ?)
+                ORDER BY created_at DESC
+                LIMIT 25
+                """, (f"-{days_meetings} days",))
+
+        tasks_r, emails_r, slack_r, meetings_r = await asyncio.gather(
+            _tasks(), _emails(), _slack(), _meetings()
+        )
+
+        out = ["# Priority digest",
+               "_Cross-source pull. Synthesise priorities by looking for items appearing in multiple lists._",
+               "",
+               f"## Open ClickUp tasks ({len(tasks_r)}, newest-updated first)"]
+        if not tasks_r:
+            out.append("_(none)_")
+        for name, upd, status, due in tasks_r:
+            tail = f"  due {due}" if due else ""
+            out.append(f"- **{name}**  _(status: {status}, updated {upd}{tail})_")
+
+        out += ["", f"## Unread emails from humans, last {days_email} days ({len(emails_r)})"]
+        if not emails_r:
+            out.append("_(none)_")
+        for d, who, addr, subj in emails_r:
+            out.append(f"- `{d}` **{who}** — {subj}")
+
+        out += ["", f"## Recent Slack from teammates (DMs/MPIMs or messages with '?'), last {days_slack} days ({len(slack_r)})"]
+        if not slack_r:
+            out.append("_(none)_")
+        for when_, who, ctype, cname, text in slack_r:
+            loc = "DM" if ctype == "im" else ("MPIM" if ctype == "mpim" else f"#{cname}")
+            out.append(f"- `{when_}` **{who}** [{loc}] — {text}")
+
+        out += ["", f"## Meetings last {days_meetings} days ({len(meetings_r)})"]
+        if not meetings_r:
+            out.append("_(none)_")
+        for d, title in meetings_r:
+            out.append(f"- `{d}` {title}")
+
+        return "\n".join(out)
