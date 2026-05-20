@@ -105,6 +105,50 @@ interactively:
 install order, per-source credential prompts, common failure modes, and
 verification steps.
 
+### Option C — Docker Compose install
+
+If you'd rather not deal with venvs and systemd, every service has a
+`Dockerfile` and the root has a `docker-compose.yml` that brings the whole
+stack up.
+
+```bash
+cp .env.example .env
+$EDITOR .env   # set EMAIL_MCP_CLIENT_ID, EMAIL_MCP_TENANT_ID, etc.
+docker compose build
+```
+
+First-time auth (interactive, one per source that needs a token):
+
+```bash
+docker compose run --rm email-mcp     # device-code flow
+docker compose run --rm onenote-mcp   # device-code flow
+docker compose run --rm clickup-mcp   # paste token at prompt
+docker compose run --rm granola-mcp   # paste key at prompt
+docker compose run --rm slack-mcp     # paste token at prompt
+```
+
+Ctrl-C each one after auth completes — the token is saved into the named
+volume. Then:
+
+```bash
+# Configure chat-mcp to use docker network service names (not localhost)
+docker run --rm -v personal-mcp-stack_chat-data:/data alpine   sh -c "mkdir -p /data/.chat-mcp && cat > /data/.chat-mcp/config.json"   < chat-mcp/docker-config.example.json
+
+docker compose up -d
+# open http://localhost:8082/
+```
+
+Notes:
+- The included `ollama` service uses the NVIDIA Container Toolkit; if you
+  don't have a GPU or want to point at an existing Ollama, remove the
+  `ollama` service block and change `lumen.endpoint` in the chat config
+  to your endpoint.
+- All ports are configurable in `.env` (e.g. set `EMAIL_MCP_HOST_PORT=18765`
+  to run the docker stack alongside an existing systemd install).
+- Data persists in named docker volumes (`docker volume ls | grep
+  personal-mcp-stack`). To migrate from an existing systemd install, copy
+  `~/.<svc>-mcp/` contents into the matching volume.
+
 ### Option B — manual install
 
 

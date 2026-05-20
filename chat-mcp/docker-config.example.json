@@ -1,0 +1,24 @@
+{
+  "_comment": "Copy this to /data/.chat-mcp/config.json inside the chat-mcp container's volume. URLs use docker network service names, not localhost.",
+  "lumen": {
+    "endpoint": "http://ollama:11434",
+    "api_key": "ollama",
+    "model": "qwen3:32b",
+    "max_tokens": 8000
+  },
+  "mcp_servers": {
+    "email":   "http://email-mcp:8765/sse",
+    "clickup": "http://clickup-mcp:8767/sse",
+    "granola": "http://granola-mcp:8768/sse",
+    "onenote": "http://onenote-mcp:8769/sse",
+    "slack":   "http://slack-mcp:8770/sse"
+  },
+  "bind": { "host": "0.0.0.0", "port": 8082 },
+  "hidden_tools": [
+    "email_sync_status", "email_force_sync",
+    "clickup_sync_status", "clickup_force_sync", "clickup_get_member",
+    "granola_sync_status", "granola_force_sync",
+    "onenote_sync_status", "onenote_force_sync",
+    "slack_sync_status", "slack_force_sync"
+  ]
+}
