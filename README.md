@@ -120,6 +120,20 @@ If you'd rather not deal with venvs and systemd, every service has a
 `Dockerfile` and the root has a `docker-compose.yml` that brings the whole
 stack up.
 
+**Fastest path: `./docker-bootstrap.sh`** — interactive installer that
+mirrors `bootstrap.sh` for the docker path. It asks which sources you want,
+writes `.env`, builds the images, walks you through each source's first-time
+auth, writes a `chat-mcp` config that only references the sources you enabled,
+pulls the LLM model into the bundled Ollama, and finally `docker compose up
+-d`s the stack.
+
+```bash
+./docker-bootstrap.sh
+# open http://localhost:8082/ when it finishes
+```
+
+If you'd rather do it by hand, the manual flow is:
+
 ```bash
 cp .env.example .env
 $EDITOR .env   # set EMAIL_MCP_CLIENT_ID, EMAIL_MCP_TENANT_ID, etc.
