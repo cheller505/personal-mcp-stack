@@ -1,4 +1,4 @@
-# Personal Knowledge MCP Stack
+# Memex — operations
 
 Six locally-hosted services that mirror cheller's email, Slack, ClickUp,
 Granola meeting notes, and OneNote into local SQLite caches, serve them via

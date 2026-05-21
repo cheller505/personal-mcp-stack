@@ -211,7 +211,7 @@ cat > "$tmp" <<JSON
 }
 JSON
 
-VOLUME=personal-mcp-stack_chat-data
+VOLUME=memex_chat-data
 dk volume create "$VOLUME" >/dev/null
 dk run --rm -v "$VOLUME":/data -v "$tmp":/src/config.json --entrypoint sh \
   python:3.12-slim -c 'mkdir -p /data/.chat-mcp && chmod 700 /data/.chat-mcp && cp /src/config.json /data/.chat-mcp/config.json'

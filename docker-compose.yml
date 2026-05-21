@@ -1,4 +1,4 @@
-# Personal Knowledge MCP Stack — Docker Compose deployment
+# Memex — Docker Compose deployment
 #
 # Single-command alternative to the per-service systemd install. Each MCP
 # runs as its own container; chat-mcp connects to the others over the
@@ -23,7 +23,7 @@
 # to 18765 etc. so the docker stack doesn't collide with running systemd
 # services.
 
-name: personal-mcp-stack
+name: memex
 
 networks:
   mcp:
@@ -44,7 +44,7 @@ services:
 
   email-mcp:
     build: ./email-mcp
-    image: personal-mcp/email-mcp
+    image: memex/email-mcp
     container_name: email-mcp
     networks: [mcp]
     volumes: [email-data:/data]
@@ -60,7 +60,7 @@ services:
 
   clickup-mcp:
     build: ./clickup-mcp
-    image: personal-mcp/clickup-mcp
+    image: memex/clickup-mcp
     container_name: clickup-mcp
     networks: [mcp]
     volumes: [clickup-data:/data]
@@ -74,7 +74,7 @@ services:
 
   granola-mcp:
     build: ./granola-mcp
-    image: personal-mcp/granola-mcp
+    image: memex/granola-mcp
     container_name: granola-mcp
     networks: [mcp]
     volumes: [granola-data:/data]
@@ -88,7 +88,7 @@ services:
 
   onenote-mcp:
     build: ./onenote-mcp
-    image: personal-mcp/onenote-mcp
+    image: memex/onenote-mcp
     container_name: onenote-mcp
     networks: [mcp]
     volumes: [onenote-data:/data]
@@ -104,7 +104,7 @@ services:
 
   slack-mcp:
     build: ./slack-mcp
-    image: personal-mcp/slack-mcp
+    image: memex/slack-mcp
     container_name: slack-mcp
     networks: [mcp]
     volumes: [slack-data:/data]
@@ -139,7 +139,7 @@ services:
 
   chat-mcp:
     build: ./chat-mcp
-    image: personal-mcp/chat-mcp
+    image: memex/chat-mcp
     container_name: chat-mcp
     networks: [mcp]
     volumes: [chat-data:/data]

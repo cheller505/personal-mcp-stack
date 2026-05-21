@@ -1,4 +1,8 @@
-# Personal Knowledge MCP Stack — one-page summary
+# Memex — one-page summary
+
+> *Memex*: Vannevar Bush's 1945 personal "memory extender". This is one.
+
+
 
 A self-hosted, local-first system that mirrors all my work data sources
 (email, Slack, task tracker, AI meeting notes, notebook pages) into local

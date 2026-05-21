@@ -13,7 +13,7 @@ once it's live.
 > on top talks to a local Ollama (qwen3:32b). Search across all of it in
 > milliseconds, nothing leaves the machine. MIT licensed.
 >
-> https://github.com/cheller505/personal-mcp-stack
+> https://github.com/cheller505/memex
 
 ---
 
@@ -24,7 +24,7 @@ once it's live.
 > with local Ollama. Sub-second search across years of data. Nothing leaves
 > the machine. MIT.
 >
-> https://github.com/cheller505/personal-mcp-stack
+> https://github.com/cheller505/memex
 
 ---
 
@@ -36,7 +36,7 @@ once it's live.
 > work data (email, Slack, ClickUp tasks, Granola meeting notes, OneNote pages)
 > into local SQLite caches and serves them to a local LLM through the Model
 > Context Protocol (MCP). It's now in production on a single GPU host, and
-> it's open source: https://github.com/cheller505/personal-mcp-stack
+> it's open source: https://github.com/cheller505/memex
 >
 > Why bother? Three reasons.
 >
@@ -69,7 +69,7 @@ once it's live.
 > calendar, your code-review queue — the per-source MCP is a ~200-line
 > skeleton you can fork.
 >
-> https://github.com/cheller505/personal-mcp-stack
+> https://github.com/cheller505/memex
 
 ---
 
@@ -110,7 +110,7 @@ once it's live.
 > your email, Slack, ClickUp tasks, Granola meeting notes, and OneNote pages
 > into local SQLite + FTS5 caches and serves them to a local LLM via MCP.
 >
-> Repo: https://github.com/cheller505/personal-mcp-stack
+> Repo: https://github.com/cheller505/memex
 >
 > What you get:
 >

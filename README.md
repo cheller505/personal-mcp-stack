@@ -1,4 +1,7 @@
-# Personal Knowledge MCP Stack
+# Memex
+
+> *Memex*: Vannevar Bush's 1945 hypothetical "memory extender" — a private
+> device that holds and links all the records you care about. This is one.
 
 Six locally-hosted services that mirror your email, Slack, task tracker, AI
 meeting notes, and notebook/wiki pages into local SQLite caches, serve them via
@@ -104,9 +107,9 @@ other agentic coding tool that can read a repo's `CLAUDE.md`) installed on
 the target host, you can paste this prompt and let it drive the install
 interactively:
 
-> Set up the personal-mcp-stack project on this machine. Clone
-> `https://github.com/cheller505/personal-mcp-stack.git` into `~/projects/`,
-> then read `~/projects/CLAUDE.md` and follow it. Walk me through each
+> Set up the Memex project on this machine. Clone
+> `https://github.com/cheller505/memex.git` into `~/projects/memex`,
+> then read `~/projects/memex/CLAUDE.md` and follow it. Walk me through each
 > credential I need to provide; do not invent values. Use the existing
 > `bootstrap.sh` and `health_check.sh` scripts as documented.
 
@@ -155,7 +158,7 @@ volume. Then:
 
 ```bash
 # Configure chat-mcp to use docker network service names (not localhost)
-docker run --rm -v personal-mcp-stack_chat-data:/data alpine   sh -c "mkdir -p /data/.chat-mcp && cat > /data/.chat-mcp/config.json"   < chat-mcp/docker-config.example.json
+docker run --rm -v memex_chat-data:/data alpine   sh -c "mkdir -p /data/.chat-mcp && cat > /data/.chat-mcp/config.json"   < chat-mcp/docker-config.example.json
 
 docker compose up -d
 # open http://localhost:8082/
@@ -169,7 +172,7 @@ Notes:
 - All ports are configurable in `.env` (e.g. set `EMAIL_MCP_HOST_PORT=18765`
   to run the docker stack alongside an existing systemd install).
 - Data persists in named docker volumes (`docker volume ls | grep
-  personal-mcp-stack`). To migrate from an existing systemd install, copy
+  memex`). To migrate from an existing systemd install, copy
   `~/.<svc>-mcp/` contents into the matching volume.
 
 ### Option B — manual install
