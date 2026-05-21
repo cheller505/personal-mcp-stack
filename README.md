@@ -86,6 +86,15 @@ table is the index.
 
 ## Quick start
 
+> ⚠️ **Security warning — the chat UI has no authentication.** The chat-mcp
+> web client (default port `:8082`) ships with a permissive `allow_all`
+> auth dependency, on the assumption that you'll only reach it over a
+> trusted LAN or a private overlay (e.g. Tailscale). **Do not expose this
+> port to the public internet.** Before starting the stack, confirm that
+> `:8082` (and the MCP service ports `:8765–:8770` and Ollama `:11434`)
+> are firewalled off from WAN — anyone who can reach `:8082` can chat with
+> your data and trigger tool calls against your synced email/Slack/etc.
+
 > Before either path: skim the [Credentials at a glance](#credentials-at-a-glance) table above to know what you'll be asked for. Then pick one path:
 
 ### Option A — let Claude Code set it up for you
